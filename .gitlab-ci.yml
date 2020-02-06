@@ -1,0 +1,39 @@
+
+stages:
+  - test
+  - build and deploy
+
+test:
+  stage: test
+  script:
+  - echo "Testing project"
+  - ./test.ps1
+
+stage_deploy:
+  stage: build and deploy
+  script:
+  - echo "Build and deploy into staging environment"
+  - ./build.ps1
+  - ./deploy.ps1
+  after_script:
+  - ./clean.ps1  
+  variables:
+    ENVIRONMENT: stage # aws keys on gitlab ci/cd settings
+    S3_BUCKET: www.positron.stage.iquipsys.net
+  environment:
+    name: stage
+
+prod_deploy:
+  stage: build and deploy
+  script:
+  - echo "Build and deploy into production environment"
+  - ./build.ps1
+  - ./deploy.ps1
+  after_script:
+  - ./clean.ps1  
+  variables:
+    ENVIRONMENT: prod # aws keys on gitlab ci/cd settings
+    S3_BUCKET: www.positron.iquipsys.net
+  environment:
+    name: prod
+  when: manual

@@ -1,0 +1,16 @@
+<pip-empty-state *ngIf="!events || !events.length" fxFlex="fill">
+  <pip-empty-state-title [text]="'DATAMONITORING_EVENTS_LIST_EMPTY' | translate" imageUrl="./assets/state/empty.svg">
+  </pip-empty-state-title>
+</pip-empty-state>
+<table *ngIf="events && events.length" fxFlex="fill">
+  <tr [ngClass]="{'live': timeIdx === -1}">
+    <th>{{ 'DETAMONITORING_EVENTS_LIST_TIME' | translate }}</th>
+    <th>{{ 'DETAMONITORING_EVENTS_LIST_EVENT' | translate }}</th>
+    <th>{{ 'DETAMONITORING_EVENTS_LIST_VALUE' | translate }}</th>
+  </tr>
+  <tr *ngFor="let event of events; let i = index; trackBy: trackByDateVal" [ngClass]="{'live': i === timeIdx}">
+    <td>{{ (event.dateVal / 1000 | amFromUnix) | amDateFormat:'LT' }}</td>
+    <td>{{ event.name }}</td>
+    <td>{{ formatValue(event) }}</td>
+  </tr>
+</table>

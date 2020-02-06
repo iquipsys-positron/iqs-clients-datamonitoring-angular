@@ -1,0 +1,83 @@
+@import '~pip-webui2-themes/variables';
+
+:host {
+    display: flex;
+    flex: 1 1 100%;
+    flex-direction: column;
+    font-family: 'Roboto';
+    .details-header-settings {
+        padding: 0 8px;
+        .details-header-dt div {
+            padding: 0 12px;
+            /deep/ .mat-form-field-underline {
+                display: none;
+            }
+        }
+        mat-list.details-header-object {
+            padding: 0;
+            min-width: 200px;
+        }
+    }
+    mat-drawer-container {
+        mat-drawer-content {
+            position: relative;
+            .pip-loading {
+                position: absolute;
+                width: 100%;
+                left: 0;
+                top: 0;
+            }
+        }
+        .details-toolbox {
+            padding: 0 12px;
+        }
+        .details-drawer {
+            width: 50%;
+        }
+    }
+}
+
+.pip-lt-sm :host {
+    .details-header-settings {
+        padding: 0;
+        .details-header-dt div {
+            padding: 6px 12px;
+        }
+    }
+}
+
+@mixin details-container-mixin($theme) {
+    $foreground: map-get($theme, foreground);
+    :host {
+        .details-header-settings {
+            border-bottom: 1px solid mat-color($foreground, divider);
+            .details-header-controls {
+                .details-header-dt {
+                    .details-header-current-time-indicator {
+                        height: 0.8em;
+                        width: 0.8em;
+                        background-color: map-get($mat-light-green, 500);
+                        border-radius: 50%;
+                        display: inline-block;
+                    }
+                }
+                .details-header-navigation {
+                    button[mat-icon-button]:not([disabled]) {
+                        color: mat-color($foreground, secondary-text);
+                    }
+                }
+            }
+        }
+        .details-toolbox {
+            button[mat-icon-button]:not(.active) {
+                color: mat-color($foreground, disabled-text);
+            }
+        }
+    }
+}
+
+@each $class,$theme in $themes {
+    .#{$class} {
+        @include details-container-mixin($theme);
+    }
+}

@@ -1,0 +1,185 @@
+<ng-container [ngSwitch]="state$ | async">
+  <pip-empty-state *ngSwitchCase="'progress'">
+    <pip-empty-state-title [text]="'DATAMONITORING_DETAILS_LOADING' | translate" imageUrl="./assets/progress.svg">
+    </pip-empty-state-title>
+    <div class="pip-progress">
+      <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+    </div>
+  </pip-empty-state>
+  <pip-empty-state *ngSwitchCase="'empty'">
+    <pip-empty-state-title [text]="'DATAMONITORING_DETAILS_EMPTY' | translate" imageUrl="./assets/empty.svg">
+    </pip-empty-state-title>
+  </pip-empty-state>
+  <pip-empty-state *ngSwitchCase="'error'">
+    <pip-empty-state-title [text]="'DATAMONITORING_DETAILS_ERROR' | translate" imageUrl="./assets/404_page.svg">
+    </pip-empty-state-title>
+    <pip-empty-state-actions [actions]="emptyStateActions"> </pip-empty-state-actions>
+  </pip-empty-state>
+  <ng-container *ngSwitchDefault>
+    <pip-empty-state *ngIf="!(object$ | async)">
+      <pip-empty-state-title [text]="'DATAMONITORING_DETAILS_EMPTY_OBJECT' | translate" imageUrl="./assets/empty.svg">
+      </pip-empty-state-title>
+    </pip-empty-state>
+    <ng-container *ngIf="object$ | async as object">
+      <div class="details-header-settings" fxLayout.lt-md="column" fxLayout="row" fxFlex="1 0 auto">
+        <ng-container *ngIf="item$ | async as item">
+          <mat-list class="details-header-object">
+            <pip-ref-item [title]="item?.title" [subtitle]="item?.subtitle" [letterSource]="item?.title"
+                          [img]="blobsUrl + item?.id" [matMenuTriggerFor]="itemsMenu">
+              <pip-ref-item-actions>
+                <button mat-icon-button secondary=true [matMenuTriggerFor]="itemsMenu">
+                  <mat-icon aria-label="SELECT" fontIcon="webui-triangle-down"></mat-icon>
+                </button>
+              </pip-ref-item-actions>
+            </pip-ref-item>
+          </mat-list>
+          <mat-menu #itemsMenu="matMenu">
+            <button mat-menu-item>Shut down</button>
+          </mat-menu>
+        </ng-container>
+        <div class="details-header-controls" fxLayout="row" fxLayoutAlign="space-between center" fxFlex="grow">
+          <div class="details-header-dt" fxLayout.lt-sm="column" fxLayout="row" fxLayoutAlign="space-between center"
+               [formGroup]="form">
+            <div>
+              {{ 'DATAMONITORING_DETAILS_PER_DAY' | translate }}
+              <mat-form-field>
+                <input matInput [matDatepicker]="datePicker" formControlName="date">
+                <mat-datepicker-toggle matSuffix [for]="datePicker">
+                  <mat-icon matDatepickerToggleIcon fontIcon="webui-triangle-down"></mat-icon>
+                </mat-datepicker-toggle>
+                <mat-datepicker #datePicker></mat-datepicker>
+              </mat-form-field>
+            </div>
+            <div>
+              <ng-container *ngIf="live$ | async">
+                <span>
+                  {{ 'DATAMONITORING_DETAILS_TIME_LIVE' | translate }}
+                  <span class="details-header-current-time-indicator"></span>
+                  &nbsp;
+                </span>
+              </ng-container>
+              <ng-container *ngIf="!(live$ | async)">{{ 'DATAMONITORING_DETAILS_TIME_SELECTED' | translate }}
+              </ng-container>
+              <mat-form-field>
+                <input matInput formControlName="time" aria-label="time" [matAutocomplete]="autoTime">
+                <button mat-icon-button matSuffix>
+                  <mat-icon fontIcon="webui-triangle-down"></mat-icon>
+                </button>
+                <mat-autocomplete #autoTime="matAutocomplete">
+                  <mat-option *ngFor="let option of timeOptions" [value]="option">{{option}}</mat-option>
+                </mat-autocomplete>
+              </mat-form-field>
+            </div>
+          </div>
+          <div class="details-header-navigation" fxLayout="row">
+            <button mat-icon-button (click)="prevPeriod()">
+              <mat-icon fontIcon="webui-chevron-big-left"></mat-icon>
+            </button>
+            <button mat-icon-button (click)="currentPeriod()" [disabled]="live$ | async">
+              <mat-icon fontIcon="webui-date"></mat-icon>
+            </button>
+            <button mat-icon-button (click)="nextPeriod()" [disabled]="live$ | async">
+              <mat-icon fontIcon="webui-chevron-big-right"></mat-icon>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div [ngSwitch]="dataState$ | async" fxFlex="grow">
+        <pip-empty-state *ngSwitchCase="'progress'" fxFlex="fill">
+          <pip-empty-state-title [text]="'DATAMONITORING_DETAILS_LOADING_PARAMS' | translate"
+                                 imageUrl="./assets/progress.svg">
+          </pip-empty-state-title>
+          <div class="pip-progress">
+            <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+          </div>
+        </pip-empty-state>
+        <pip-empty-state *ngSwitchCase="'empty'" fxFlex="fill">
+          <pip-empty-state-title [text]="'DATAMONITORING_DETAILS_EMPTY_PARAMS' | translate"
+                                 imageUrl="./assets/state/empty.svg">
+          </pip-empty-state-title>
+        </pip-empty-state>
+        <pip-empty-state *ngSwitchCase="'error'" fxFlex="fill">
+          <pip-empty-state-title [text]="'DATAMONITORING_DETAILS_ERROR_PARAMS' | translate"
+                                 [subText]="'DATAMONITORING_DETAILS_ERROR_SUBTITLE_PARAMS' | translate"
+                                 imageUrl="./assets/state/404_page.svg">
+          </pip-empty-state-title>
+          <pip-empty-state-actions [actions]="emptyStateReadErrorActions"> </pip-empty-state-actions>
+        </pip-empty-state>
+        <mat-drawer-container *ngSwitchCase="'data'" fxFlex="fill">
+          <mat-drawer-content fxLayout="column">
+            <mat-progress-bar mode="indeterminate" *ngIf="loading$ | async" class="pip-loading"></mat-progress-bar>
+            <div class="details-toolbox" fxFlex="1 0 auto">
+              <div fxFlex="grow" fxLayout="row">
+                <button mat-icon-button [ngClass]="{'active': mainPanelType === 'summary'}"
+                        (click)="setMainPanelType('summary')">
+                  <mat-icon fontIcon="webui-grid"></mat-icon>
+                </button>
+                <button mat-icon-button [ngClass]="{'active': mainPanelType === 'splitted'}"
+                        (click)="setMainPanelType('splitted')">
+                  <mat-icon>view_headline</mat-icon>
+                </button>
+                <button mat-icon-button [ngClass]="{'active': mainPanelType === 'stacked'}"
+                        (click)="setMainPanelType('stacked')">
+                  <mat-icon>view_day</mat-icon>
+                </button>
+                <button mat-icon-button [ngClass]="{'active': mainPanelType === 'events'}"
+                        (click)="setMainPanelType('events')">
+                  <mat-icon>flash_on</mat-icon>
+                </button>
+                <button mat-icon-button fxHide.gt-xs [ngClass]="{'active': mainPanelType === 'map'}"
+                        (click)="setMainPanelType('map')">
+                  <mat-icon fontIcon="iqt-location"></mat-icon>
+                </button>
+                <button mat-icon-button fxHide.lt-sm style="margin-left: auto"
+                        [ngClass]="{'active': sidePanelOpened$ | async}" (click)="toggleSidePanelOpened()">
+                  <mat-icon style="transform: rotate(90deg)">view_agenda</mat-icon>
+                </button>
+              </div>
+            </div>
+            <pip-scrollable fxFlex="1 1 100%">
+              <pip-scrollable-content fxFlex="grow" fxLayout="row">
+                <iqs-data-summary *ngIf="mainPanelType === 'summary'" [params]="params$ | async" [date]="date$ | async">
+                </iqs-data-summary>
+                <iqs-data-chart *ngIf="mainPanelType === 'splitted' || mainPanelType === 'stacked'"
+                                [params]="params$ | async" [date]="date$ | async" [live]="live$ | async"
+                                [single]="mainPanelType === 'stacked'" fxFlex="grow"
+                                (dateChanged)="dateChanged($event)"></iqs-data-chart>
+                <iqs-events-list *ngIf="mainPanelType === 'events'" [events]="events$ | async" [date]="date$ | async">
+                </iqs-events-list>
+                <iqs-map *ngIf="mainPanelType === 'map'"></iqs-map>
+              </pip-scrollable-content>
+            </pip-scrollable>
+          </mat-drawer-content>
+          <mat-drawer position="end" class="details-drawer" mode="side" [opened]="sidePanelOpened$ | async">
+            <div fxLayout="column" fxFlex="grow">
+              <div class="details-toolbox" fxFlex="1 0 auto">
+                <div fxFlex="grow" fxLayout="row" fxHide.lt-sm [fxHide]="!(sidePanelOpened$ | async)">
+                  <button mat-icon-button [ngClass]="{'active': sidePanelType === 'events'}"
+                          (click)="setSidePanelType('events')">
+                    <mat-icon>flash_on</mat-icon>
+                  </button>
+                  <button mat-icon-button [ngClass]="{'active': sidePanelType === 'map'}"
+                          (click)="setSidePanelType('map')">
+                    <mat-icon fontIcon="iqt-location"></mat-icon>
+                  </button>
+                  <button mat-icon-button class="active" style="margin-left: auto"
+                          (click)="toggleSidePanelOpened(false)">
+                    <mat-icon>close</mat-icon>
+                  </button>
+                </div>
+              </div>
+              <pip-scrollable fxFlex="grow">
+                <pip-scrollable-content fxFlex="fill" fxLayout="row">
+                  <iqs-events-list *ngIf="sidePanelType === 'events'" [events]="events$ | async" [date]="date$ | async">
+                  </iqs-events-list>
+                  <iqs-map *ngIf="sidePanelType === 'map'"></iqs-map>
+                </pip-scrollable-content>
+              </pip-scrollable>
+            </div>
+          </mat-drawer>
+        </mat-drawer-container>
+      </div>
+    </ng-container>
+  </ng-container>
+</ng-container>

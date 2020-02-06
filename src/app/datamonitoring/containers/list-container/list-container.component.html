@@ -1,0 +1,116 @@
+<ng-container *ngIf="(view$ | async) === 'list'">
+  <mat-toolbar color="primary"></mat-toolbar>
+  <pip-shadow visible="true" attachmentSide="top"></pip-shadow>
+  <pip-document-layout toolbar="true" [ngSwitch]="state$ | async">
+    <pip-document-content *ngSwitchCase="'progress'">
+      <pip-empty-state>
+        <pip-empty-state-title [text]="'DATAMONITORING_LIST_LOADING' | translate" imageUrl="./assets/progress.svg">
+        </pip-empty-state-title>
+        <div class="pip-progress">
+          <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+        </div>
+      </pip-empty-state>
+    </pip-document-content>
+    <pip-document-content *ngSwitchCase="'empty'">
+      <pip-empty-state>
+        <pip-empty-state-title [text]="'DATAMONITORING_LIST_EMPTY' | translate" imageUrl="./assets/empty.svg">
+        </pip-empty-state-title>
+      </pip-empty-state>
+    </pip-document-content>
+    <pip-document-content *ngSwitchDefault>
+      <ng-container *ngTemplateOutlet="searchLineTpl"></ng-container>
+      <ng-container *ngFor="let group of groups$ | async; trackBy: trackById">
+        <div class="group-title">{{ group.name | translate }}</div>
+        <mat-list>
+          <pip-ref-item *ngFor="let item of group.items; trackBy: trackById" [title]="item.title"
+                        [subtitle]="item.subtitle" [letterSource]="item.title" [img]="blobsUrl + item.id" [routerLink]="'/' + item.id">
+          </pip-ref-item>
+        </mat-list>
+      </ng-container>
+      <ng-container *ngIf="(search.value !== '') && ((groups$ | async)?.length === 0)">
+        <pip-empty-state>
+          <pip-empty-state-title [text]="'DATAMONITORING_LIST_SEARCH_EMPTY' | translate" imageUrl="./assets/empty.svg">
+          </pip-empty-state-title>
+        </pip-empty-state>
+      </ng-container>
+    </pip-document-content>
+  </pip-document-layout>
+</ng-container>
+<div *ngIf="(view$ | async) === 'grid'" class="grid-container">
+  <ng-container [ngSwitch]="state$ | async">
+    <pip-empty-state *ngSwitchCase="'progress'">
+      <pip-empty-state-title [text]="'DATAMONITORING_LIST_LOADING' | translate" imageUrl="./assets/progress.svg">
+      </pip-empty-state-title>
+      <div class="pip-progress">
+        <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+      </div>
+    </pip-empty-state>
+    <pip-empty-state *ngSwitchCase="'empty'">
+      <pip-empty-state-title [text]="'DATAMONITORING_LIST_EMPTY' | translate" imageUrl="./assets/empty.svg">
+      </pip-empty-state-title>
+    </pip-empty-state>
+    <ng-container *ngSwitchDefault>
+      <ng-container *ngTemplateOutlet="searchLineTpl"></ng-container>
+      <ng-container *ngFor="let group of groups$ | async; trackBy: trackById">
+        <div class="pip-tile-group-name" [ngStyle]="{'max-width.px': width || 'inherit'}">{{ group.name | translate }}
+        </div>
+        <pip-tiles-layout [animation]="isAnimated" columnWidth="256" [stretch]="media.isMainActive('xs')"
+                          (resized)="onResize($event)">
+          <ng-container *ngFor="let item of group.items">
+            <div class="pip-tile" [routerLink]="'/' + item.id">
+              <mat-list class="pip-tile-header">
+                <pip-ref-item [title]="item.title" [subtitle]="item.subtitle" [letterSource]="item.title"
+                              [img]="blobsUrl + item.id">
+                </pip-ref-item>
+              </mat-list>
+              <div class="pip-tile-list">
+                <div class="pip-tile-list-item" fxLayoutGap="4px"
+                     *ngFor="let param of item?.params; trackBy: trackById">
+                  <div fxFlex="grow">
+                    {{ param.name }}
+                  </div>
+                  <div fxFlex="1 1 30%">
+                    {{ param.value }}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </ng-container>
+        </pip-tiles-layout>
+      </ng-container>
+    </ng-container>
+  </ng-container>
+</div>
+<ng-template #searchLineTpl>
+  <div class="search-wrapper" [ngStyle.lt-sm]="{'max-width': 'inherit'}"
+       [ngStyle]="{'max-width.px': (((view$ | async) === 'grid') && width) || 'inherit'}">
+    <pip-search-input fxFlex="grow">
+      <mat-form-field class="search-field" floatLabel="never" appearance="fill">
+        <mat-icon matPrefix fontIcon="webui-search"></mat-icon>
+        <input matInput placeholder="{{ 'DATAMONITORING_LIST_SEARCH_PLACEHOLDER' | translate }}" name="search"
+               [formControl]="search" [matAutocomplete]="auto">
+        <mat-autocomplete #auto="matAutocomplete" (closed)="setAutocomplete(false)" (opened)="setAutocomplete(true)">
+          <mat-option *ngFor="let option of autocompleteOptions$ | async" [value]="option.value"
+                      [innerHtml]="option.display">
+          </mat-option>
+        </mat-autocomplete>
+        <div matSuffix fxLayout="row">
+          <button mat-icon-button disableRipple>
+            <mat-icon *ngIf="search.value" (click)="search.setValue('')" fontIcon="webui-cross"></mat-icon>
+          </button>
+          <button mat-icon-button disableRipple (click)="toggleAutocomplete()">
+            <mat-icon fontIcon="webui-triangle-down"></mat-icon>
+          </button>
+        </div>
+      </mat-form-field>
+    </pip-search-input>
+    <div class="view-list" fxLayout="row" fxLayoutGap="16px" fxLayoutAlign="space-around center">
+      <mat-icon fontIcon="webui-menu" [ngClass]="{'active': (view$ | async) === 'list'}" (click)="view$.next('list')">
+      </mat-icon>
+      <mat-icon fontIcon="webui-grid" [ngClass]="{'active': (view$ | async) === 'grid'}" (click)="view$.next('grid')">
+      </mat-icon>
+      <!-- <mat-icon fontIcon="webui-dashboard" [ngClass]="{'active': (view$ | async) === 'dashboard'}"></mat-icon> -->
+    </div>
+  </div>
+  <ng-content></ng-content>
+</ng-template>

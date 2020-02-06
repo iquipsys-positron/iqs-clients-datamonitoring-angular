@@ -1,0 +1,16 @@
+export enum ValueUnit {
+    None = '',
+    kg = 'kg',
+    ton = 'ton',
+    V = 'V',
+    l = 'l',
+    mV = 'mV',
+    A = 'A',
+    mA = 'mA',
+    C = 'C',
+    F = 'F',
+    m = 'm',
+    mSec = 'm/sec',
+    km = 'km',
+    kmH = 'km/h',
+}

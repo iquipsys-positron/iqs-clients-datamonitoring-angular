@@ -1,0 +1,21 @@
+/* You can add global styles to this file, and also import other style files */
+@import "~pip-webui2-themes/styles.scss";
+@import "~pip-webui2-layouts/styles.scss";
+
+@mixin snackbar-mixin($theme) {
+    $warn: map-get($theme, warn);
+    .pip-error-snackbar {
+        background-color: mat-color($warn);
+        min-width: 0;
+        font-weight: 800;
+        .mat-simple-snackbar-action {
+            display: none;
+        }
+    }
+}
+
+@each $class,$theme in $themes {
+    .#{$class} {
+        @include snackbar-mixin($theme);
+    }
+}

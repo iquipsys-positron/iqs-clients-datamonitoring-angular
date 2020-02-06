@@ -1,0 +1,55 @@
+@import '~pip-webui2-themes/variables';
+
+:host {
+    padding: 0 24px;
+    flex: 1 1 100%;
+    display: block;
+    .data-summary-item {
+        max-width: 100%;
+        display: flex;
+        align-items: center;
+        padding-bottom: 18px;
+        .data-summary-item-name, .data-summary-item-value {
+            display: inline-block;
+            width: 50%;
+        }
+        .data-summary-item-name {
+            font-size: 1.2em;
+        }
+        .data-summary-item-value {
+            padding: 18px;
+            font-size: 2em;
+            border-radius: 8px;
+        }
+    }
+}
+
+.pip-gt-sm {
+    :host {
+        .data-summary-item {
+            max-width: 50%;
+        }
+    }
+}
+
+@mixin data-summary-mixin($theme) {
+    $background: map-get($theme, background);
+    $foreground: map-get($theme, foreground);
+    :host {
+        .data-summary-item {
+            .data-summary-item-name {
+                color: mat-color($foreground, secondary-text);
+            }
+            .data-summary-item-value {
+                background-color: mat-color($background, hover);
+            }
+        }
+    }
+}
+
+@each $class,$theme in $themes {
+    .#{$class} {
+        @include data-summary-mixin($theme);
+    }
+}
+
