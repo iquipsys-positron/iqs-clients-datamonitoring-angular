@@ -1,0 +1,7 @@
+{
+    "mock": true,
+    "session": {
+        "serverUrl": "/",
+        "unautorizedUrl": "/monitoring/index.html"
+    }
+}

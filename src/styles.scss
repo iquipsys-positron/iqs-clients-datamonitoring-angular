@@ -1,6 +1,5 @@
 /* You can add global styles to this file, and also import other style files */
-@import "~pip-webui2-themes/styles.scss";
-@import "~pip-webui2-layouts/styles.scss";
+@import "~pip-webui2-themes/variables";
 
 @mixin snackbar-mixin($theme) {
     $warn: map-get($theme, warn);
